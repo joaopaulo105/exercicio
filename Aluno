@@ -1,0 +1,130 @@
+from importlib.metadata import entry_points
+import sqlite3
+
+# Conexão com o banco de dados
+conn = sqlite3.connect('gamificacao.db')
+c = conn.cursor()
+
+# Criação das tabelas
+c.execute('''CREATE TABLE IF NOT EXISTS alunos (
+                id INTEGER PRIMARY KEY,
+                nome TEXT,
+                matricula TEXT,
+                turma TEXT)''')
+
+c.execute('''CREATE TABLE IF NOT EXISTS professor (
+                id INTEGER PRIMARY KEY,
+                nome TEXT,
+                senha TEXT)''')
+
+# Inserir dados do professor (somente uma vez)
+c.execute("INSERT INTO professor (nome, senha) VALUES ('Professor X', '1234')")
+conn.commit()
+
+def registrar_aluno(nome, matricula, turma):
+    c.execute("INSERT INTO alunos (nome, matricula, turma) VALUES (?, ?, ?)", 
+              (nome, matricula, turma))
+    conn.commit()
+
+# Exemplo de uso:
+registrar_aluno("João da Silva", "12345", "1A")
+c.execute('''CREATE TABLE IF NOT EXISTS pontos (
+                aluno_id INTEGER,
+                tipo TEXT,
+                pontos INTEGER,
+                FOREIGN KEY (aluno_id) REFERENCES alunos (id))''')
+
+def atribuir_pontos(aluno_id, tipo, pontos):
+    c.execute("INSERT INTO pontos (aluno_id, tipo, pontos) VALUES (?, ?, ?)", 
+              (aluno_id, tipo, pontos))
+    conn.commit()
+
+# Exemplos de atribuição de pontos
+atribuir_pontos(1, "Participação", 10)
+atribuir_pontos(1, "Entrega de tarefas", 10)
+c.execute('''CREATE TABLE IF NOT EXISTS notas (
+                aluno_id INTEGER,
+                tipo TEXT,
+                nota REAL,
+                FOREIGN KEY (aluno_id) REFERENCES alunos (id))''')
+
+def registrar_nota(aluno_id, tipo, nota):
+    c.execute("INSERT INTO notas (aluno_id, tipo, nota) VALUES (?, ?, ?)", 
+              (aluno_id, tipo, nota))
+    conn.commit()
+
+# Exemplo de uso:
+registrar_nota(1, "Prova", 8.5)
+registrar_nota(1, "Trabalho", 7.0)
+def gerar_relatorio(aluno_id):
+    # Obter pontuação total
+    c.execute("SELECT SUM(pontos) FROM pontos WHERE aluno_id = ?", (aluno_id,))
+    total_pontos = c.fetchone()[0]
+    
+    # Obter média das notas
+    c.execute("SELECT AVG(nota) FROM notas WHERE aluno_id = ?", (aluno_id,))
+    media_notas = c.fetchone()[0]
+    
+    # Obter nome do aluno
+    c.execute("SELECT nome FROM alunos WHERE id = ?", (aluno_id,))
+    nome_aluno = c.fetchone()[0]
+    
+    # Gerar relatório
+    print(f"Relatório do aluno: {nome_aluno}")
+    print(f"Pontuação total da gamificação: {total_pontos}")
+    print(f"Média das notas acadêmicas: {media_notas}")
+    
+    # Classificação no ranking (aqui, é só um exemplo simples)
+    c.execute("SELECT nome FROM alunos")
+    todos_alunos = c.fetchall()
+    print("Classificação:")
+    for aluno in todos_alunos:
+        print(aluno[0])
+
+# Exemplo de uso:
+gerar_relatorio(1)
+import tkinter as tk
+
+def criar_gui():
+    root = tk.Tk()
+    root.title("Sistema de Gamificação")
+
+    def registrar():
+        nome = entry_nome.get()
+        matricula = entry_matricula.get()
+        turma = entry_turma.get()
+        registrar_aluno(nome, matricula, turma)
+        label_status.config(text="Aluno registrado com sucesso!")
+
+    label_nome = tk.Label(root, text="Nome do Aluno:")
+    label_nome.pack()
+    entry_nome = tk.Entry(root)
+    entry_nome.pack()
+
+    label_matricula = tk.Label(root, text="Matrícula:")
+    label_matricula.pack()
+    entry_matricula = tk.Entry(root)
+    entry_matricula.pack()
+
+    label_turma = tk.Label(root, text="Turma:")
+    label_turma.pack()
+    entry_turma = tk.Entry(root)
+    entry_turma.pack()
+
+    btn_registrar = tk.Button(root, text="Registrar Aluno", command=registrar)
+    btn_registrar.pack()
+
+    label_status = tk.Label(root, text="")
+    label_status.pack()
+
+    root.mainloop()
+
+# Exemplo de uso:
+criar_gui()
+c.execute('''CREATE TABLE IF NOT EXISTS notas (
+                aluno_id INTEGER,
+                trimestre INTEGER,
+                tipo TEXT,
+                nota REAL,
+                FOREIGN KEY (aluno_id) REFERENCES alunos (id))''')
+
