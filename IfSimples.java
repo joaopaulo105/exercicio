@@ -6,11 +6,9 @@ public class IfSimples {
         nota = Double.parseDouble(JOptionPane.showInputDialog("Digite a nota"));
         if (nota >= 7.0){
             JOptionPane.showMessageDialog(null,"Aprovado");
+        } else {
+            JOptionPane.showMessageDialog(null, "Reprovado");
         }
-            else {
 
-                JOptionPane.showMessageDialog(null, "Reprovado");
-            }
-
-        }
     }
+}
